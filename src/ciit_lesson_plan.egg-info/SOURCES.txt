@@ -8,3 +8,5 @@ src/ciit_lesson_plan.egg-info/entry_points.txt
 src/ciit_lesson_plan.egg-info/requires.txt
 src/ciit_lesson_plan.egg-info/top_level.txt
 src/lesson_plan/__init__.py
+src/lesson_plan/plan_gui.py
+src/lesson_plan/test.py

@@ -498,3 +498,12 @@ def _run_conversion(template_path, markdown_path, output_dir='.'):
     # 保存文档
     document.save(output_path)
     print(f"DOCX 文件已生成: {output_path}")
+
+def plan_gui():
+    """GUI entry point."""
+    import tkinter as tk
+    from .plan_gui import LessonPlanGUI
+    root = tk.Tk()
+    # 不然可能没有引用的实例可能会被垃圾回收
+    app = LessonPlanGUI(root)
+    root.mainloop()
