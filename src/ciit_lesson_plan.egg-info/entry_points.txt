@@ -1,0 +1,2 @@
+[console_scripts]
+lesson_plan = lesson_plan:convert_md_to_docx
