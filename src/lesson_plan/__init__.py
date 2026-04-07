@@ -1,5 +1,5 @@
 from docx import Document
-from docx.shared import Pt, Cm, RGBColor
+from docx.shared import Pt, Cm, RGBColor, Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT 
 from docx.oxml import OxmlElement
@@ -7,6 +7,7 @@ from docx.oxml.ns import qn
 from docx.table import _Cell
 import argparse
 import os
+import re
 
 # 课前，课中等字体设置
 def _color_white(merged_cell: _Cell):
@@ -35,6 +36,74 @@ def _color_white(merged_cell: _Cell):
   run.font.name = '微软雅黑'  # 设置字体为"微软雅黑"
   run._element.rPr.rFonts.set(qn('w:eastAsia'), '微软雅黑')  # 确保中文字体兼容
   run.bold = True  # 添加这一行以实现加粗
+
+def _process_text_with_images(cell, text_content, markdown_base_dir):
+    """
+    处理文本内容，识别Markdown图片标记并插入图片到单元格
+    """
+    # 匹配 ![alt](path) 格式的图片标记
+    image_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
+    
+    # 清空单元格原有内容
+    cell.text = ''
+    
+    last_pos = 0
+    for match in image_pattern.finditer(text_content):
+        # 添加图片前的文本
+        if match.start() > last_pos:
+            text_before = text_content[last_pos:match.start()]
+            if text_before.strip():
+                paragraph = cell.add_paragraph(text_before.strip())
+                for run in paragraph.runs:
+                    run.font.name = '宋体'
+                    run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
+                    run.font.size = Pt(10.5)
+        
+        # 处理图片
+        alt_text = match.group(1)
+        image_path = match.group(2)
+        
+        # 构建完整图片路径
+        full_image_path = os.path.join(markdown_base_dir, image_path)
+        
+        if os.path.exists(full_image_path):
+            try:
+                # 在新段落中插入图片，限制最大宽度为12厘米
+                paragraph = cell.add_paragraph()
+                run = paragraph.add_run()
+                # 设置图片最大宽度12cm，保持比例
+                run.add_picture(full_image_path, width=Cm(12))
+                paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                
+                # 添加图片说明
+                if alt_text:
+                    caption_paragraph = cell.add_paragraph(f"图：{alt_text}")
+                    caption_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                    for run in caption_paragraph.runs:
+                        run.font.name = '宋体'
+                        run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
+                        run.font.size = Pt(9)
+                        run.italic = True
+            except Exception as e:
+                error_paragraph = cell.add_paragraph(f"[图片加载失败: {image_path}]")
+                for run in error_paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 0, 0)
+        else:
+            missing_paragraph = cell.add_paragraph(f"[图片未找到: {image_path}]")
+            for run in missing_paragraph.runs:
+                run.font.color.rgb = RGBColor(255, 165, 0)
+        
+        last_pos = match.end()
+    
+    # 添加剩余文本
+    if last_pos < len(text_content):
+        text_after = text_content[last_pos:]
+        if text_after.strip():
+            paragraph = cell.add_paragraph(text_after.strip())
+            for run in paragraph.runs:
+                run.font.name = '宋体'
+                run._element.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
+                run.font.size = Pt(10.5)
 
 def _read_markdown(file_path):
   with open(file_path, 'r', encoding='utf-8') as file:
@@ -107,6 +176,9 @@ def _run_conversion(template_path, markdown_path, output_dir='.'):
     # 读取Markdown文件内容
     markdown_content = _read_markdown(markdown_path)
     parsed_data = _parse_markdown(markdown_content)
+    
+    # 获取Markdown文件所在目录，用于解析相对路径的图片
+    markdown_base_dir = os.path.dirname(os.path.abspath(markdown_path))
 
     # 提取项目名称
     project_name = parsed_data.get("项目名称", "").strip()
@@ -378,7 +450,8 @@ def _run_conversion(template_path, markdown_path, output_dir='.'):
 
     # 内容展开
     table.cell(8,0).text = "内容展开"
-    table.cell(8,1).text = parsed_data.get("内容展开:教学内容", "").strip()
+    # 处理包含图片的教学内容
+    _process_text_with_images(table.cell(8,1), parsed_data.get("内容展开:教学内容", "").strip(), markdown_base_dir)
     table.cell(8,2).text = parsed_data.get("内容展开:学生活动", "").strip()
     table.cell(8,3).text = parsed_data.get("内容展开:教师活动", "").strip()
     table.cell(8,4).text = parsed_data.get("内容展开:设计意图", "").strip()

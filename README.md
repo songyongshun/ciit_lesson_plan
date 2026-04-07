@@ -14,7 +14,7 @@
 - `re`: 用于正则表达式操作。
 
 ## 使用方法
-1. 准备一个 Markdown 文件，文件名格式为 `lesson_{number}.md`，其中 `{number}` 是一个数字。
+1. 准备一个 Markdown 文件，文件名格式为 `ja_{number}.md`，其中 `{number}` 是一个数字。
 2. 准备一个 Word 文档模板 `lesson_template.docx`。
 3. 运行脚本：
   ```bash

@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: ciit-lesson-plan
-Version: 0.1.4
+Version: 0.2.0
 Summary: 这是一个用于将Markdown格式的教学计划内容转换为Word文档（.docx）的Python脚本。该脚本使用python_docx库来处理Word文档，能够读取Markdown文件内容，并根据预定义的模板生成格式化的教案文档。
 Author-email: Yongshun Song <ys_song@foxmail.com>
 Maintainer-email: Yongshun Song <ys_song@foxmail.com>
@@ -27,7 +27,7 @@ Dynamic: license-file
 - `re`: 用于正则表达式操作。
 
 ## 使用方法
-1. 准备一个 Markdown 文件，文件名格式为 `lesson_{number}.md`，其中 `{number}` 是一个数字。
+1. 准备一个 Markdown 文件，文件名格式为 `ja_{number}.md`，其中 `{number}` 是一个数字。
 2. 准备一个 Word 文档模板 `lesson_template.docx`。
 3. 运行脚本：
   ```bash
