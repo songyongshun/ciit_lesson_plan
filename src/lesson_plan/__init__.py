@@ -106,21 +106,32 @@ def _process_text_with_images(cell, text_content, markdown_base_dir):
                 run.font.size = Pt(10.5)
 
 def _read_markdown(file_path):
-  with open(file_path, 'r', encoding='utf-8') as file:
-    return file.read()
+  with open(file_path, 'r', encoding='utf-8-sig') as file:
+    content = file.read()
+    # 统一处理换行符，兼容Windows/DOS/Mac格式
+    content = content.replace('\r\n', '\n').replace('\r', '\n')
+    return content
 
 def _parse_markdown(content):
   data = {}
   current_key = None
   for line in content.splitlines():
-    if line.startswith('# '):
-      current_key = line[2:].strip()
+    # 先清理行首行尾所有空白和不可见字符
+    line_clean = line.strip('\ufeff \t\n\r\x00-\x1f')
+    
+    # 兼容全角空格、半角空格、制表符等任意空白，同时支持Unicode空格
+    h1_match = re.match(r'^#[\s\u3000]+', line_clean, re.UNICODE)
+    h2_match = re.match(r'^##[\s\u3000]+', line_clean, re.UNICODE)
+    h3_match = re.match(r'^###[\s\u3000]+', line_clean, re.UNICODE)
+    
+    if h1_match:
+      current_key = line_clean[len(h1_match.group()):].strip()
       data[current_key] = ''
-    elif line.startswith('## '):
-      current_key = line[3:].strip()
+    elif h2_match:
+      current_key = line_clean[len(h2_match.group()):].strip()
       data[current_key] = ''
-    elif line.startswith('### '):
-      current_key = line[4:].strip()
+    elif h3_match:
+      current_key = line_clean[len(h3_match.group()):].strip()
       data[current_key] = ''  
     elif current_key:
       data[current_key] += line.strip() + '\n'
