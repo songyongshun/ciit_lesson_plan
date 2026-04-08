@@ -9,16 +9,21 @@
 - 支持自定义输出文件名。
 - 支持复杂的表格格式，包括单元格合并、字体样式、背景颜色等。
 
-## 依赖库
-- `python-docx`: 用于创建和修改 Word 文档。
-- `re`: 用于正则表达式操作。
+## 安装
+  ```bash
+  pip install ciit-lesson-plan
+  ```
 
 ## 使用方法
 1. 准备一个 Markdown 文件，文件名格式为 `ja_{number}.md`，其中 `{number}` 是一个数字。
 2. 准备一个 Word 文档模板 `lesson_template.docx`。
-3. 运行脚本：
+3. 终端命令行：
   ```bash
-  python lesson_plan.py
+  lesson_plan ja_1.md --template template.docx --outputdir ./output
+  ```
+4. 可视化程序
+  ```bash
+  plan_gui
   ```
 
 ## 输入文件结构
